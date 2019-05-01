@@ -9,18 +9,27 @@ class User(AbstractUser):
 class Section(models.Model):
     title = models.CharField(max_length=150, unique=True)
 
+    def __str__(self):
+        return self.title
+
 
 class Thread(models.Model):
     title = models.CharField(max_length=150)
     section = models.ForeignKey(to=Section, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.title
 
 
 class Post(models.Model):
     thread = models.ForeignKey(to=Thread, on_delete=models.CASCADE)
     author = models.ForeignKey(to=User, on_delete=models.DO_NOTHING)
     text = models.TextField()
-    created_on = models.DateTimeField(auto_now=True)
+    created_on = models.DateTimeField(auto_now_add=True)
     last_edited_on = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.text
 
 
 class Upvote(models.Model):
@@ -44,4 +53,4 @@ class LogItem(models.Model):
     table = models.CharField(max_length=255)
     old_value = models.TextField(null=True)
     new_value = models.TextField(null=True)
-    timestamp = models.DateTimeField(auto_now=True)
+    timestamp = models.DateTimeField(auto_now_add=True)

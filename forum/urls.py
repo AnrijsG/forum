@@ -21,5 +21,6 @@ from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index),
-    path('sections/<section_id>/threads', views.getThreads)
+    path('sections/<section_id>/threads', views.get_threads),
+    path('sections/<section_id>/threads/<thread_id>/posts', views.get_posts)
 ]
