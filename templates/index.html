@@ -1,14 +1,53 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <meta charset="UTF-8">
     <title>Title</title>
 </head>
 <body>
-    {% if a %}
-    <h1>Hello world</h1>
-    {% else %}
-    <h1>ne</h1>
-    {% endif %}
+<nav class="p-3 navbar navbar-dark bg-dark">
+    <a class="navbar-brand" href="index.html">Forum</a>
+    <form class="form-inline">
+        <a class="navbar-text mr-4 " href="">Login</a>
+        <input class="form-control" type="search" placeholder="Search">
+    </form>
+</nav>
+<nav>
+    <div class="nav nav-tabs bg-warning" id="nav-tab" role="tablist">
+        {% for s in sections %}
+            {% if forloop.counter0 == 0 %}
+                <a class="nav-item nav-link active text-dark" id="nav-{{ s.title }}-tab" data-toggle="tab" href="#nav-{{ s.title }}" role="tab" aria-controls="nav-{{ s.title }}" aria-selected="false">{{ s.title }}</a>
+            {% else %}
+                <a class="nav-item nav-link text-dark" id="nav-{{ s.title }}-tab" data-toggle="tab" href="#nav-{{ s.title }}" role="tab" aria-controls="nav-{{ s.title }}" aria-selected="false">{{ s.title }}</a>
+            {% endif %}
+        {% endfor %}
+    </div>
+</nav>
+<div class="tab-content" id="nav-tabContent">
+    {% for s in sections %}
+        {% if forloop.counter0 == 0 %}
+            <div class="tab-pane fade show active" id="nav-{{ s.title }}" role="tabpanel" aria-labelledby="nav-{{ s.title }}-tab">
+                {% for t in threads %}
+                    {% if s.title == t.section.title %}
+                        {{ t.title }}
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="tab-pane fade" id="nav-{{ s.title }}" role="tabpanel" aria-labelledby="nav-{{ s.title }}-tab">
+                {% for t in threads %}
+                    {% if s.title == t.section.title %}
+                        {{ t.title }}
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 </body>
 </html>
