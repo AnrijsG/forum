@@ -1,0 +1,6 @@
+.idea
+.vscode
+db.sqlite3
+forum/migrations
+**/__pycache__
+env
