@@ -1,5 +1,6 @@
 import json
 
+from django.contrib.auth import authenticate, login
 from django.forms.models import model_to_dict
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -10,7 +11,12 @@ from .models import Section, Thread, Post
 def index(request):
     section_list = Section.objects.all()
     thread_list = Thread.objects.all()
-    return render(request, 'index.html', {'sections':section_list, 'threads':thread_list})
+    if request.user.is_authenticated:
+        current_user = request.user
+    else:
+        current_user = '';
+
+    return render(request, 'index.html', {'sections':section_list, 'threads':thread_list, 'user':current_user})
 
 
 def safe_call(value, f):
@@ -38,4 +44,19 @@ def get_posts(request, section_id, thread_id):
     offset = int(request.GET.get('offset', '0'))
     posts = map(model_to_dict, Post.objects.filter(thread=Thread.objects.filter(section=int(section_id)).get(pk=int(thread_id)))[offset:offset + limit])
     return HttpResponse(json.dumps(list(posts)), content_type="application/json")
+
+
+def login(request):
+    return render(request, 'registration/login.html')
+
+
+def authenticate(request):
+    username = request.POST['username']
+    password = request.POST['password']
+    user = authenticate(request, username=username, password=password)
+    if user is not None:
+        login(request, user)
+        return render(request, 'index.html')
+    else:
+        return render(request, 'registration/login.html')
 
