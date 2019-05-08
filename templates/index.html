@@ -31,22 +31,22 @@
 </nav>
 <div class="tab-content" id="nav-tabContent">
     {% if user != '' %}
-        <a class="m-2 p-2" href="/">New Thread</a>
+        <a class="m-2 p-2" id="new_thread" href="">New Thread</a>
     {% endif %}
-    {% for s in sections %}
-        <div class="tab-pane fade show {% if forloop.counter0 == 0 %} active {% endif %}" id="nav-{{ s.id }}">
-            <div class="m-4" id="container-{{ s.id }}">
+        {% for s in sections %}
+            <div class="tab-pane fade show {% if forloop.counter0 == 0 %} active {% endif %}" id="nav-{{ s.id }}">
+                <div class="m-4" id="container-{{ s.id }}">
 
-            </div>
-            <div class="container">
-              <div class="row">
-                <div class="col text-center">
-                  <button id="load-more-{{ s.id }}" class="btn btn-secondary btn-lg btn-block align-middle" type="button">Load more</button>
                 </div>
-              </div>
+                <div class="container">
+                  <div class="row">
+                    <div class="col text-center">
+                      <button id="load-more-{{ s.id }}" class="btn btn-secondary btn-lg btn-block align-middle" type="button">Load more</button>
+                    </div>
+                  </div>
+                </div>
             </div>
-        </div>
-    {% endfor %}
+        {% endfor %}
 </div>
 
 

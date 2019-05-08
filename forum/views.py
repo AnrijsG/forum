@@ -60,3 +60,8 @@ def authenticate(request):
     else:
         return render(request, 'registration/login.html')
 
+
+def push_thread(request, thread_id):
+    posts = Post.objects.filter(thread=thread_id);
+    op = posts.order_by("last_edited_on").first().author.username;
+    return render(request, "thread_template.html", {'post_list':posts, 'original_poster':op});

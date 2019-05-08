@@ -21,7 +21,7 @@
         for (var i in threads) {
             var thread = threads[i];
             console.log(thread);
-            var dom = $("<div class='p-2 m-2 border bg-white'><h5>" + thread.title + "</h5><br><p class='text-right'>Created by: " + thread.author + "</p></div>");
+            var dom = $("<div class='p-2 m-2 border bg-white'><a href='/thread/" + thread.id + "'>" + thread.title + "</a><br><p class='text-right'>Created by: " + thread.author + "</p></div>");
             container.append(dom);
         }
     }
@@ -45,6 +45,9 @@
             });
             $("#load-more-" + sectionId).click(function() {
                 getThreads(sectionId, sections[sectionId].length);
+            });
+            $("#new_thread").click(function() {
+                alert("test");
             });
         });
     });
