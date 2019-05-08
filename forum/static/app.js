@@ -35,6 +35,9 @@
         $("a[data-toggle='tab']").each(function() {
             var sectionId = this.attributes["data-section-id"].value;
             var jq = $(this);
+            $("#new_thread").click(function() {
+                alert("test");
+            });
             if (jq.hasClass("active")) {
                 getThreads(sectionId, 0);
             }
@@ -45,9 +48,6 @@
             });
             $("#load-more-" + sectionId).click(function() {
                 getThreads(sectionId, sections[sectionId].length);
-            });
-            $("#new_thread").click(function() {
-                alert("test");
             });
         });
     });

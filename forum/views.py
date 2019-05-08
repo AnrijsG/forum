@@ -62,6 +62,11 @@ def authenticate(request):
 
 
 def push_thread(request, thread_id):
-    posts = Post.objects.filter(thread=thread_id);
-    op = posts.order_by("last_edited_on").first().author.username;
-    return render(request, "thread_template.html", {'post_list':posts, 'original_poster':op});
+    db_query = Post.objects.filter(thread=thread_id);
+    post_list = db_query.order_by("last_edited_on");
+    op = db_query.order_by("last_edited_on").first();
+    if request.user.is_authenticated:
+        current_user = request.user
+    else:
+        current_user = ''
+    return render(request, "thread_template.html", {'post_list':post_list, 'original_poster':op, 'user':current_user});
