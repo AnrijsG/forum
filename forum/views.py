@@ -5,7 +5,7 @@ from django.forms.models import model_to_dict
 from django.http import HttpResponse
 from django.shortcuts import render
 
-from .models import Section, Thread, Post
+from .models import Section, Thread, Post, User
 
 
 def index(request):
@@ -14,7 +14,7 @@ def index(request):
     if request.user.is_authenticated:
         current_user = request.user
     else:
-        current_user = '';
+        current_user = ''
 
     return render(request, 'index.html', {'sections':section_list, 'threads':thread_list, 'user':current_user})
 
@@ -50,6 +50,10 @@ def login(request):
     return render(request, 'registration/login.html')
 
 
+def new_thread(request):
+    return render(request, 'new_thread.html')
+
+
 def authenticate(request):
     username = request.POST['username']
     password = request.POST['password']
@@ -62,11 +66,18 @@ def authenticate(request):
 
 
 def push_thread(request, thread_id):
-    db_query = Post.objects.filter(thread=thread_id);
-    post_list = db_query.order_by("last_edited_on");
-    op = db_query.order_by("last_edited_on").first();
+    db_query = Post.objects.filter(thread=thread_id)
+    post_list = db_query.order_by("last_edited_on")
+    op = db_query.order_by("last_edited_on").first()
     if request.user.is_authenticated:
         current_user = request.user
     else:
         current_user = ''
-    return render(request, "thread_template.html", {'post_list':post_list, 'original_poster':op, 'user':current_user});
+    return render(request, "thread_template.html", {'post_list': post_list, 'original_poster': op, 'user': current_user})
+
+
+def user(request, userid):
+    selected_user = User.objects.filter(id=userid)
+    return render(request, "user.html", {'selected_user': selected_user})
+
+

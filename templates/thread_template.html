@@ -31,7 +31,7 @@
                 <u>{{ original_poster.thread.title }}</u>
             </div>
             <div class="col text-center">
-                By {{ original_poster.author }}
+                By <a href="/u/{{ original_poster.author_id }}">{{ original_poster.author }}</a>
             </div>
         </div>
     </div>
@@ -52,7 +52,7 @@
                     Placeholder for profile image
                 </div>
                 <div class="col">
-                    <p>{{ post.author }}</p>
+                    <a href="/u/{{ post.author_id }}">{{ post.author }}</a>
                 </div>
                 <div class="col">
                     <p>Joined on: {{ post.author.date_joined|date:"d/m/Y" }}</p>

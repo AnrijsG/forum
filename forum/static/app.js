@@ -36,7 +36,7 @@
             var sectionId = this.attributes["data-section-id"].value;
             var jq = $(this);
             $("#new_thread").click(function() {
-                alert("test");
+                window.location.href = "/newThread/" + sectionId;
             });
             if (jq.hasClass("active")) {
                 getThreads(sectionId, 0);
