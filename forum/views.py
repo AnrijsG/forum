@@ -1,6 +1,7 @@
 import json
 
 from django.contrib.auth import authenticate, login
+from django.db import transaction
 from django.forms.models import model_to_dict
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -26,6 +27,13 @@ def safe_call(value, f):
         return f(value)
 
 
+def threads(request, section_id):
+    if request.method == "GET":
+        return get_threads(request, section_id)
+    else:
+        return create_thread(request, section_id)
+
+
 def get_threads(request, section_id):
     limit = int(request.GET.get('limit', '20'))
     offset = int(request.GET.get('offset', '0'))
@@ -39,6 +47,17 @@ def get_threads(request, section_id):
     return HttpResponse(json.dumps(threads), content_type="application/json")
 
 
+@transaction.atomic()
+def create_thread(request, section_id):
+    data = json.loads(request.body)
+    new_thread = Thread(title=data["title"], section_id=section_id)
+    new_thread.save()
+    new_post = Post(thread=new_thread, author=request.user, text=data["text"])
+    new_post.save()
+    new_thread_id = {"id":new_thread.pk}
+    return HttpResponse(json.dumps(new_thread_id), content_type="application/json")
+
+
 def get_posts(request, section_id, thread_id):
     limit = int(request.GET.get('limit', '20'))
     offset = int(request.GET.get('offset', '0'))
@@ -48,10 +67,6 @@ def get_posts(request, section_id, thread_id):
 
 def login(request):
     return render(request, 'registration/login.html')
-
-
-def new_thread(request):
-    return render(request, 'new_thread.html')
 
 
 def authenticate(request):
@@ -77,7 +92,34 @@ def push_thread(request, thread_id):
 
 
 def user(request, userid):
+    if request.user.is_authenticated:
+        current_user = request.user
+    else:
+        current_user = ''
     selected_user = User.objects.filter(id=userid)
-    return render(request, "user.html", {'selected_user': selected_user})
-
+    selected_user_posts = Post.objects.filter(author_id=userid).order_by('created_on')
+    username = selected_user[0].username
+    first_name = selected_user[0].first_name
+    last_name = selected_user[0].last_name
+    is_staff = selected_user[0].is_staff
+    date_joined = selected_user[0].date_joined
+    last_login = selected_user[0].last_login
+    post_count = 0
+    for i in selected_user_posts:
+        post_count += 1
+    selected_user_posts = selected_user_posts[:3]
+    posts = [{
+        "text": post.text,
+        "thread": post.thread.title
+    } for post in selected_user_posts]
+    return render(request, "user.html", {
+        'username': username,
+        'first_name': first_name,
+        'last_name': last_name,
+        'is_staff': is_staff,
+        'date_joined': date_joined,
+        'last_login': last_login,
+        'post_count': post_count,
+        'posts': posts,
+        'user': current_user})
 

@@ -21,10 +21,9 @@ from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index),
-    path('sections/<section_id>/threads', views.get_threads),
+    path('sections/<section_id>/threads', views.threads),
     path('sections/<section_id>/threads/<thread_id>/posts', views.get_posts),
     path('accounts/', include('django.contrib.auth.urls')),
     path('thread/<thread_id>', views.push_thread),
-    path('mewThread/<section_id>', views.new_thread),
     path('u/<userid>', views.user)
 ]

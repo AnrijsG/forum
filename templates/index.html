@@ -32,7 +32,7 @@
 <div class="tab-content" id="nav-tabContent">
         {% for s in sections %}
             <div class="tab-pane fade show {% if forloop.counter0 == 0 %} active {% endif %}" id="nav-{{ s.id }}">
-                <div class="m-4" id="container-{{ s.id }}">
+                <div class="card m-4" id="container-{{ s.id }}">
 
                 </div>
                 <div class="container">
@@ -42,7 +42,7 @@
                       </div>
                   {% if user != '' %}
                       <div class="col text-center">
-                        <button id="new_thread" class="btn btn-secondary btn-lg btn-block align-middle" type="button">New thread</button>
+                        <button class="btn btn-secondary btn-lg btn-block align-middle" type="button" data-toggle="modal" data-target="#new_thread">New thread</button>
                       </div>
                   {% endif %}
                   </div>
@@ -51,6 +51,34 @@
         {% endfor %}
 </div>
 
+<div class="modal fade" id="new_thread" tabindex="-1" role="dialog" aria-labelledby="new_thread" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="new_thread">New Thread</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                <div class="form-group">
+                    <label for="thread_title" class="col-form-label">Thread title:</label>
+                    <input type="text" class="form-control" id="thread_title">
+                </div>
+                <div class="form-group">
+                    <label for="post" class="col-form-label">Content:</label>
+                    <textarea class="form-control" id="post"></textarea>
+                </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Discard</button>
+                <button type="button" class="btn btn-primary" id="post_thread" tabindex="0" data-toggle="popover" data-trigger="focus" title="Error" data-placement="top" data-content="Please fill all the fields!">Post thread</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="https://code.jquery.com/jquery-3.4.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
