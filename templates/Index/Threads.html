@@ -1,0 +1,23 @@
+{% block Threads %}
+<div class="tab-content" id="nav-tabContent">
+        {% for s in sections %}
+            <div class="tab-pane fade show {% if forloop.counter0 == 0 %} active {% endif %}" id="nav-{{ s.id }}">
+                <div class="card m-4" id="container-{{ s.id }}">
+
+                </div>
+                <div class="container">
+                  <div class="row">
+                      <div class="col text-center">
+                        <button id="load-more-{{ s.id }}" class="btn btn-secondary btn-lg btn-block align-middle" type="button">Load more</button>
+                      </div>
+                  {% if user != '' %}
+                      <div class="col text-center">
+                        <button class="btn btn-secondary btn-lg btn-block align-middle" type="button" data-toggle="modal" data-target="#new_thread">New thread</button>
+                      </div>
+                  {% endif %}
+                  </div>
+                </div>
+            </div>
+        {% endfor %}
+</div>
+{% endblock %}

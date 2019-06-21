@@ -1,0 +1,42 @@
+{% block PostList %}
+{% for post in post_list %}
+    {% if not forloop.first %}
+    <div class="p-2 m-2 border bg-white border-secondary">
+        <div class="row">
+            <div class="col-2 border-right border-secondary">
+                <div class="col">
+                    Placeholder for profile image
+                </div>
+                <div class="col">
+                    <a href="/u/{{ post.author_id }}">{{ post.author.username }}</a>
+                </div>
+                <div class="col">
+                    <p>Joined on: {{ post.author.date_joined|date:"d/m/Y" }}</p>
+                </div>
+
+            </div>
+            <div class="col">
+                <div class="col text-right border-bottom border-secondary">
+                    <p>Created on: {{ post.created_on|date:"d/m/Y" }}</p>
+                </div>
+                <div class="col">
+                    {{ post.text }}
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col"></div>
+            <div class="col m-1">
+                 {% if user.is_authenticated %}
+                    <button type="button" class="btn btn-info float-right" data-toggle="modal" data-target="#replyModal">Reply</button>
+                {% endif %}
+                {% if user.is_staff or user == post.author %}
+                    <button type="button" class="btn btn-warning float-right">Edit</button>
+                    <button type="button" class="btn btn-danger float-right">Delete</button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% endfor %}
+{% endblock %}

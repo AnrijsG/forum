@@ -1,0 +1,22 @@
+{% block Navigation %}
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<nav class="p-3 navbar navbar-dark bg-dark">
+    <a class="navbar-brand" href="/">Forum</a>
+    <form class="form-inline">
+        {% if user.is_authenticated %}
+                <p class="navbar-text mr-4 h6 text-secondary">Hi, {{ user }}!</p>
+                <a class="navbar-text mr-4 h6" href="{% url 'logout' %}">Logout</a>
+        {% else %}
+            <a class="navbar-text mr-4" href="/accounts/login">Login</a>
+        {% endif %}
+        <input class="form-control" type="search" placeholder="Search">
+    </form>
+</nav>
+
+{% endblock %}

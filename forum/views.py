@@ -1,6 +1,7 @@
 import json
 
 from django.contrib.auth import authenticate, login
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.forms.models import model_to_dict
 from django.http import HttpResponse
@@ -17,7 +18,7 @@ def index(request):
     else:
         current_user = ''
 
-    return render(request, 'index.html', {'sections':section_list, 'threads':thread_list, 'user':current_user})
+    return render(request, 'Index/index.html', {'sections':section_list, 'threads':thread_list, 'user':current_user})
 
 
 def safe_call(value, f):
@@ -58,11 +59,17 @@ def create_thread(request, section_id):
     return HttpResponse(json.dumps(new_thread_id), content_type="application/json")
 
 
-def get_posts(request, section_id, thread_id):
-    limit = int(request.GET.get('limit', '20'))
-    offset = int(request.GET.get('offset', '0'))
-    posts = map(model_to_dict, Post.objects.filter(thread=Thread.objects.filter(section=int(section_id)).get(pk=int(thread_id)))[offset:offset + limit])
-    return HttpResponse(json.dumps(list(posts)), content_type="application/json")
+def show_thread(request, thread_id):
+    page = int(request.GET.get('page', '1'))
+    all_posts = Post.objects.order_by('created_on').filter(thread=thread_id)
+    first_post = all_posts[0]
+    paginator = Paginator(all_posts, 5)
+
+    posts = paginator.get_page(page)
+    db_query = Post.objects.filter(thread=thread_id)
+    op = db_query.order_by("last_edited_on").first()
+
+    return render(request, "ThreadTemplate/thread_template.html", {'first_post': first_post, 'post_list': posts, 'original_poster': op})
 
 
 def login(request):
@@ -75,20 +82,9 @@ def authenticate(request):
     user = authenticate(request, username=username, password=password)
     if user is not None:
         login(request, user)
-        return render(request, 'index.html')
+        return render(request, 'Index/index.html')
     else:
         return render(request, 'registration/login.html')
-
-
-def push_thread(request, thread_id):
-    db_query = Post.objects.filter(thread=thread_id)
-    post_list = db_query.order_by("last_edited_on")
-    op = db_query.order_by("last_edited_on").first()
-    if request.user.is_authenticated:
-        current_user = request.user
-    else:
-        current_user = ''
-    return render(request, "thread_template.html", {'post_list': post_list, 'original_poster': op, 'user': current_user})
 
 
 def user(request, userid):
@@ -97,7 +93,7 @@ def user(request, userid):
     else:
         current_user = ''
     selected_user = User.objects.filter(id=userid)
-    selected_user_posts = Post.objects.filter(author_id=userid).order_by('created_on')
+    selected_user_posts = Post.objects.filter(author_id=userid).order_by('-created_on')
     username = selected_user[0].username
     first_name = selected_user[0].first_name
     last_name = selected_user[0].last_name
@@ -110,9 +106,10 @@ def user(request, userid):
     selected_user_posts = selected_user_posts[:3]
     posts = [{
         "text": post.text,
-        "thread": post.thread.title
+        "thread": post.thread.title,
+        "created_on": post.created_on
     } for post in selected_user_posts]
-    return render(request, "user.html", {
+    return render(request, "User/user.html", {
         'username': username,
         'first_name': first_name,
         'last_name': last_name,
@@ -122,4 +119,11 @@ def user(request, userid):
         'post_count': post_count,
         'posts': posts,
         'user': current_user})
+
+
+def post_reply(request, thread_id):
+    data = json.loads(request.body)
+    new_post = Post(thread_id=thread_id, author=request.user, text=data["text"])
+    new_post.save()
+    return HttpResponse()
 

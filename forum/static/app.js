@@ -41,10 +41,9 @@
     function newThread(sectionId, title, text) {
         if(isNotBlank(title) && isNotBlank(text)) {
             $.post("/sections/" + sectionId + "/threads", JSON.stringify({title: title, text: text}), function(newThreadId) {
-                window.location = "/thread/" + newThreadId["id"];
+                window.location = "/threads/" + newThreadId["id"];
             });
         }else {
-            //alert("Please fill all the fields!");
              $('.popover-dismiss').popover({
                  trigger: 'focus'
             })
@@ -62,7 +61,7 @@
         for (var i in threads) {
             var thread = threads[i];
             console.log(thread);
-            var dom = $("<div class='card-body border'><a href='/thread/" + thread.id + "'>" + thread.title + "</a><br><p class='text-right'>Created by: " + "<a href = '/u/ " + thread.first_post['author'] + "'>" + thread.author + "</a>" + "</p></div>");
+            var dom = $("<div class='card-body border'><a href='/threads/" + thread.id + "'>" + thread.title + "</a><br><p class='text-right'>Created by: " + "<a href = '/u/ " + thread.first_post['author'] + "'>" + thread.author + "</a>" + "</p></div>");
             container.append(dom);
         }
     }

@@ -1,0 +1,15 @@
+{% block FirstPost %}
+<div class="p-2 m-2 border bg-white border-secondary mt-4 mb-4">
+    <div class="col">
+        {{ original_poster.text }}
+    </div>
+    <div class="row">
+        <div class="col"></div>
+        <div class="col">
+        {% if user.is_authenticated %}
+            <button type="button" class="btn btn-info float-right" data-toggle="modal" data-target="#newReplyModal">New Reply</button>
+        {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
