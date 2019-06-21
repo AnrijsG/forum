@@ -1,20 +1,21 @@
-{% load static %}
 <!DOCTYPE html>
+{% load static %}
 {% include "Index/Navigation.html" %}
 
-<p class="m-2"> <a href="/">Home</a> / <a>{{ first_post.thread.section }}</a> / <a>{{ first_post.thread }}</a> </p>
+<form action="{{ text.id }}/go" method="post" class="card m-2 p-2 h-100">
+    {% csrf_token %}
+    <div class="form-group card-body">
+        <textarea name="text" rows="20" class="form-control" id="editPost"></textarea>
+        <button type="submit" class="btn btn-warning float-right m-2 p-2">Edit</button>
+    </div>
+</form>
+<script>
+    var text = "{{ text.text }}";
+</script>
 
-{% include "ThreadTemplate/ThreadHeader.html" %}
-
-{% include "ThreadTemplate/FirstPost.html" %}
-{% include "ThreadTemplate/PostList.html" %}
-
-{% include "ThreadTemplate/NewReplyModal.html" %}
-{% include "ThreadTemplate/DeleteModal.html" %}
-{% include "ThreadTemplate/Paginator.html" %}
 <script src="https://code.jquery.com/jquery-3.4.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
-<script src="{% static 'thread.js' %}"></script>
+<script src="{% static 'edit.js' %}"></script>
 </body>
 </html>

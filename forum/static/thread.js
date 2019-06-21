@@ -29,14 +29,28 @@ function isNotBlank(value) {
 function newPost(threadId, text) {
     if(isNotBlank(text)) {
         $.post(threadId + "/post", JSON.stringify({text: text}), function() {
-            alert("success")
+            window.location.href = "/threads/" + threadId;
         });
     }else {
-        alert("a");
+        alert("Error");
     }
 }
+var delete_id = 0;
+function setDeleteId(id) {
+    delete_id = id;
+}
+
 $(function() {
+    $("#delete_button").click(function () {
+        if(delete_id != 0) {
+            $.post("/delete/" + delete_id, JSON.stringify({delete_id: delete_id}), function(threadId) {
+                location.reload();
+            });
+    }else {
+        alert("Error");
+    }
+   })
    $("#post_button").click(function() {
-        newPost(threadId, $("#post").val())
+        newPost(threadId, $("#newPost").val())
    });
 });

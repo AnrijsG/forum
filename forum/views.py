@@ -5,7 +5,7 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.forms.models import model_to_dict
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 from .models import Section, Thread, Post, User
 
@@ -63,7 +63,8 @@ def show_thread(request, thread_id):
     page = int(request.GET.get('page', '1'))
     all_posts = Post.objects.order_by('created_on').filter(thread=thread_id)
     first_post = all_posts[0]
-    paginator = Paginator(all_posts, 5)
+
+    paginator = Paginator(all_posts.exclude(id=first_post.pk), 5)
 
     posts = paginator.get_page(page)
     db_query = Post.objects.filter(thread=thread_id)
@@ -125,5 +126,31 @@ def post_reply(request, thread_id):
     data = json.loads(request.body)
     new_post = Post(thread_id=thread_id, author=request.user, text=data["text"])
     new_post.save()
+    return HttpResponse()
+
+
+def post_edit(request, post_id):
+    text = Post.objects.filter(id=post_id)[0]
+    if request.user.pk == text.author_id or request.user.is_staff:
+        return render(request, 'edit/edit_template.html', {'text': text})
+    else:
+        return index(request)
+
+
+def post_edit_go(request, post_id):
+    text = request.POST.get('text')
+    post = Post.objects.get(id=post_id)
+    if post.text != text:
+        post.text = text
+        post.save()
+
+    return redirect('/threads/' + str(post.thread.pk))
+
+
+def post_delete(request, delete_id):
+    post = Post.objects.get(id=delete_id)
+    thread_id = post.thread.pk
+    if request.user == post.author or request.user.is_staff:
+        post.delete()
     return HttpResponse()
 

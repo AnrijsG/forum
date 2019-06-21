@@ -25,5 +25,8 @@ urlpatterns = [
     path('threads/<thread_id>', views.show_thread),
     path('threads/<thread_id>/post', views.post_reply),
     path('accounts/', include('django.contrib.auth.urls')),
+    path('edit/<post_id>', views.post_edit),
+    path('edit/<post_id>/go', views.post_edit_go),
+    path('delete/<delete_id>', views.post_delete),
     path('u/<userid>', views.user)
 ]

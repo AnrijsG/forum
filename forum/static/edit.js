@@ -1,0 +1,3 @@
+$(function () {
+   $("#editPost").text(text)
+});
