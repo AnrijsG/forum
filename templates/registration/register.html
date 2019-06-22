@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <meta charset="UTF-8">
+    <title>Auth</title>
+</head>
+<body>
+<div class="form-group m-5 p-5 card">
+    <div class="card-body">
+        <form enctype="multipart/form-data" method="POST">
+            <h2 class="text-center pb-4">Register</h2>
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-sm-2 col-form-label">
+                    <label for="{{ user_form.username.id_for_label }}">Username:</label>
+                </div>
+                <div class="col-sm-10">
+                    {{ user_form.username }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-2 col-form-label">
+                    <label for="{{ user_form.email.id_for_label }}">Email:</label>
+                </div>
+                <div class="col-sm-10">
+                    {{ user_form.email }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-2 col-form-label">
+                    <label for="{{ user_form.password.id_for_label }}">Password:</label>
+                </div>
+                <div class="col-sm-10">
+                    {{ user_form.password }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-2 col-form-label">
+                    <label for="{{ user_form.first_name.id_for_label }}">First Name:</label>
+                </div>
+                <div class="col-sm-10">
+                    {{ user_form.first_name }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-2 col-form-label">
+                    <label for="{{ user_form.last_name.id_for_label }}">Last Name:</label>
+                </div>
+                <div class="col-sm-10">
+                    {{ user_form.last_name }}
+                </div>
+            </div>
+            <input type="submit" class="float-right btn btn-primary" value="Register">
+            <input type="button" class="float-right btn btn-secondary" onclick="window.location='/'" value="Cancel">
+        </form>
+    </div>
+</div>
+{{ errors }}
+
+</body>
+<script src="https://code.jquery.com/jquery-3.4.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+</html>

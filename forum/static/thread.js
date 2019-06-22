@@ -43,7 +43,7 @@ function setDeleteId(id) {
 $(function() {
     $("#delete_button").click(function () {
         if(delete_id != 0) {
-            $.post("/delete/" + delete_id, JSON.stringify({delete_id: delete_id}), function(threadId) {
+            $.post("/delete/" + delete_id, JSON.stringify({delete_id: delete_id}), function() {
                 location.reload();
             });
     }else {

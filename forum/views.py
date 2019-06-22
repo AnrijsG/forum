@@ -1,12 +1,14 @@
 import json
 
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, forms
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.forms.models import model_to_dict
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
+from .forms import UserForm
 from .models import Section, Thread, Post, User
 
 
@@ -48,6 +50,7 @@ def get_threads(request, section_id):
     return HttpResponse(json.dumps(threads), content_type="application/json")
 
 
+@login_required
 @transaction.atomic()
 def create_thread(request, section_id):
     data = json.loads(request.body)
@@ -73,14 +76,8 @@ def show_thread(request, thread_id):
     return render(request, "ThreadTemplate/thread_template.html", {'first_post': first_post, 'post_list': posts, 'original_poster': op})
 
 
-def login(request):
-    return render(request, 'registration/login.html')
-
-
 def authenticate(request):
-    username = request.POST['username']
-    password = request.POST['password']
-    user = authenticate(request, username=username, password=password)
+    user = authenticate(request, username=forms.username, password=forms.password)
     if user is not None:
         login(request, user)
         return render(request, 'Index/index.html')
@@ -99,8 +96,10 @@ def user(request, userid):
     first_name = selected_user[0].first_name
     last_name = selected_user[0].last_name
     is_staff = selected_user[0].is_staff
+    is_su = selected_user[0].is_superuser
     date_joined = selected_user[0].date_joined
     last_login = selected_user[0].last_login
+    is_active = selected_user[0].is_active
     post_count = 0
     for i in selected_user_posts:
         post_count += 1
@@ -115,6 +114,8 @@ def user(request, userid):
         'first_name': first_name,
         'last_name': last_name,
         'is_staff': is_staff,
+        'is_su': is_su,
+        'is_active': is_active,
         'date_joined': date_joined,
         'last_login': last_login,
         'post_count': post_count,
@@ -122,6 +123,7 @@ def user(request, userid):
         'user': current_user})
 
 
+@login_required
 def post_reply(request, thread_id):
     data = json.loads(request.body)
     new_post = Post(thread_id=thread_id, author=request.user, text=data["text"])
@@ -129,6 +131,7 @@ def post_reply(request, thread_id):
     return HttpResponse()
 
 
+@login_required
 def post_edit(request, post_id):
     text = Post.objects.filter(id=post_id)[0]
     if request.user.pk == text.author_id or request.user.is_staff:
@@ -137,6 +140,7 @@ def post_edit(request, post_id):
         return index(request)
 
 
+@login_required
 def post_edit_go(request, post_id):
     text = request.POST.get('text')
     post = Post.objects.get(id=post_id)
@@ -147,6 +151,21 @@ def post_edit_go(request, post_id):
     return redirect('/threads/' + str(post.thread.pk))
 
 
+@login_required
+def deactivate(request):
+    if request.user.is_staff:
+        username = json.loads(request.body)
+        user = User.objects.get(username=username['username'])
+        if user.is_active:
+            user.is_active = False
+            user.save()
+        else:
+            user.is_active = True
+            user.save()
+    return HttpResponse()
+
+
+@login_required
 def post_delete(request, delete_id):
     post = Post.objects.get(id=delete_id)
     thread_id = post.thread.pk
@@ -154,3 +173,20 @@ def post_delete(request, delete_id):
         post.delete()
     return HttpResponse()
 
+
+def register(request):
+    user_form = UserForm(data=request.POST)
+    if request.method == "POST":
+        if not request.user.is_authenticated:
+            if user_form.is_valid():
+                user = user_form.save()
+                user.set_password(user.password)
+                user.save()
+                return index(request)
+            else:
+                return render(request, 'registration/register.html', {'user_form': user_form, 'errors': user_form.errors})
+        else:
+            return HttpResponse('You are already logged in!')
+        return render(request, 'registration/register.html', {'user_form': user_form, 'errors': ''})
+    else:
+        return render(request, 'registration/register.html', {'user_form': user_form})

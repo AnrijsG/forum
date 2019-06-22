@@ -7,15 +7,17 @@
     <div class="card-body">
         <div class="row">
             <div class="col">
-                {{ username }}
+                <p class="m-0 p-0" id="username">{{ username }}</p>
             </div>
             <div class="col">
                 Member since: {{ date_joined }}
             </div>
             <div class="w-100"></div>
             <div class="col">
-                {% if is_staff %}
+                {% if is_su %}
                     <span class="badge badge-pill badge-danger">Administrator</span>
+                {% elif is_staff %}
+                    <span class="badge badge-pill badge-warning">Moderator</span>
                 {% else %}
                     <span class="badge badge-pill badge-primary">User</span>
                 {% endif %}
@@ -31,6 +33,22 @@
                 <a class="btn btn-primary float-right" data-toggle="collapse" href="#moreInfo" role="button" aria-expanded="false">
                     More Information
                 </a>
+                {% if user.is_staff %}
+                    {% if user.is_superuser and is_staff %}
+                        {% if is_active %}
+                            <input type="button" value="Deactivate" id="activationButton" class="btn btn-danger float-right">
+                        {% else %}
+                            <input type="button" value="Activate" id="activationButton" class="btn btn-success float-right">
+                        {% endif %}
+                    {% endif %}
+                    {% if not is_staff %}
+                        {% if is_active %}
+                            <input type="button" value="Deactivate" id="activationButton" class="btn btn-danger float-right">
+                        {% else %}
+                            <input type="button" value="Activate" id="activationButton" class="btn btn-success float-right">
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
             </div>
         </div>
     </div>
