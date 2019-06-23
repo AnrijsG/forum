@@ -40,17 +40,25 @@ function setDeleteId(id) {
     delete_id = id;
 }
 
+function deleteThread() {
+    $.post("/deleteThread", JSON.stringify({threadID: threadId}), function() {
+        window.location.href = "/";
+    });
+}
+
 $(function() {
     $("#delete_button").click(function () {
         if(delete_id != 0) {
             $.post("/delete/" + delete_id, JSON.stringify({delete_id: delete_id}), function() {
-                location.reload();
-            });
-    }else {
-        alert("Error");
-    }
-   })
-   $("#post_button").click(function() {
-        newPost(threadId, $("#newPost").val())
-   });
+            location.reload();
+        });
+        }else {
+            alert("Error");
+        }
+    });
+
+    $("#delete_thread_button").click(function() {
+        deleteThread();
+    });
+
 });

@@ -8,6 +8,9 @@
         <div class="col">
         {% if user.is_authenticated %}
             <button type="button" class="btn btn-info float-right" data-toggle="modal" data-target="#newReplyModal">New Reply</button>
+            {% if user.is_staff %}
+                <button type="button" class="btn btn-danger float-right" data-toggle="modal" data-target="#deleteThreadModal">Delete Thread</button>
+            {% endif %}
         {% endif %}
         </div>
     </div>

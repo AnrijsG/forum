@@ -156,19 +156,19 @@ def deactivate(request):
     if request.user.is_staff:
         username = json.loads(request.body)
         user = User.objects.get(username=username['username'])
-        if user.is_active:
-            user.is_active = False
-            user.save()
-        else:
-            user.is_active = True
-            user.save()
+        if not user.is_superuser:
+            if user.is_active:
+                user.is_active = False
+                user.save()
+            else:
+                user.is_active = True
+                user.save()
     return HttpResponse()
 
 
 @login_required
 def post_delete(request, delete_id):
     post = Post.objects.get(id=delete_id)
-    thread_id = post.thread.pk
     if request.user == post.author or request.user.is_staff:
         post.delete()
     return HttpResponse()
@@ -190,3 +190,12 @@ def register(request):
         return render(request, 'registration/register.html', {'user_form': user_form, 'errors': ''})
     else:
         return render(request, 'registration/register.html', {'user_form': user_form})
+
+
+@login_required
+def delete_thread(request):
+    if request.user.is_staff:
+        thread_id = json.loads(request.body)
+        thread = Thread.objects.get(id=thread_id['threadId'])
+        thread.delete()
+    return HttpResponse()
