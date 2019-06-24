@@ -1,9 +1,13 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Group
 from django.db import models
 
 
 class User(AbstractUser):
     dark_mode = models.BooleanField(default=False)
+
+
+class UserGroup(Group):
+    pass
 
 
 class Section(models.Model):

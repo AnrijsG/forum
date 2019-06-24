@@ -1,7 +1,8 @@
 import json
 
 from django.contrib.auth import authenticate, login, forms
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import Group
+from django.contrib.auth.decorators import login_required, permission_required
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.forms.models import model_to_dict
@@ -9,7 +10,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
 from .forms import UserForm
-from .models import Section, Thread, Post, User
+from .models import Section, Thread, Post, User, UserGroup
 
 
 def index(request):
@@ -51,7 +52,8 @@ def get_threads(request, section_id):
 
 
 @login_required
-@transaction.atomic()
+@permission_required(perm='add_thread', raise_exception=True)
+@transaction.atomic
 def create_thread(request, section_id):
     data = json.loads(request.body)
     new_thread = Thread(title=data["title"], section_id=section_id)
@@ -124,14 +126,17 @@ def user(request, userid):
 
 
 @login_required
+@permission_required(perm='add_post', raise_exception=True)
 def post_reply(request, thread_id):
     data = json.loads(request.body)
     new_post = Post(thread_id=thread_id, author=request.user, text=data["text"])
+    #new_post = Post.objects.create(thread_id=thread_id, author=request.user, text=data["text"])
     new_post.save()
     return HttpResponse()
 
 
 @login_required
+@permission_required(perm='change_post', raise_exception=True)
 def post_edit(request, post_id):
     text = Post.objects.filter(id=post_id)[0]
     if request.user.pk == text.author_id or request.user.is_staff:
@@ -141,6 +146,7 @@ def post_edit(request, post_id):
 
 
 @login_required
+@permission_required(perm='change_post', raise_exception=True)
 def post_edit_go(request, post_id):
     text = request.POST.get('text')
     post = Post.objects.get(id=post_id)
@@ -152,6 +158,7 @@ def post_edit_go(request, post_id):
 
 
 @login_required
+@permission_required(perm='delete_user', raise_exception=True)
 def deactivate(request):
     if request.user.is_staff:
         username = json.loads(request.body)
@@ -167,6 +174,7 @@ def deactivate(request):
 
 
 @login_required
+@permission_required(perm='delete_post', raise_exception=True)
 def post_delete(request, delete_id):
     post = Post.objects.get(id=delete_id)
     if request.user == post.author or request.user.is_staff:
@@ -181,6 +189,8 @@ def register(request):
             if user_form.is_valid():
                 user = user_form.save()
                 user.set_password(user.password)
+                usergroup = UserGroup.objects.get(id='2')
+                usergroup.save()
                 user.save()
                 return index(request)
             else:
@@ -193,6 +203,7 @@ def register(request):
 
 
 @login_required
+@permission_required(perm='delete_thread', raise_exception=True)
 def delete_thread(request):
     if request.user.is_staff:
         thread_id = json.loads(request.body)

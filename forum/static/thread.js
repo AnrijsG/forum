@@ -61,4 +61,8 @@ $(function() {
         deleteThread();
     });
 
+    $("#post_button").click(function () {
+       newPost(threadId, $('#newPost').val());
+    });
+
 });
