@@ -29,6 +29,10 @@ urlpatterns = [
     path('edit/<post_id>', views.post_edit),
     path('edit/<post_id>/go', views.post_edit_go),
     path('delete/<delete_id>', views.post_delete),
+    path('deleteThread', views.delete_thread),
     path('u/<userid>', views.user),
-    path('deactivate', views.deactivate)
+    path('deactivate', views.deactivate),
+    path('upvote', views.post_upvote),
+    path('search', views.search),
+    path('adminpan', views.admin_panel)
 ]

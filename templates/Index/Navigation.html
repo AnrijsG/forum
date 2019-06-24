@@ -8,15 +8,14 @@
 <body>
 <nav class="p-3 navbar navbar-dark bg-dark">
     <a class="navbar-brand" href="/">Forum</a>
-    <form class="form-inline">
+    <div class="form-inline">
         {% if user.is_authenticated %}
                 <p class="navbar-text mr-4 h6 text-secondary">Hi, {{ user }}!</p>
                 <a class="navbar-text mr-4 h6" href="{% url 'logout' %}">Logout</a>
         {% else %}
             <a class="navbar-text mr-4" href="/accounts/login">Login</a>
         {% endif %}
-        <input class="form-control" type="search" placeholder="Search">
-    </form>
+    </div>
 </nav>
 
 {% endblock %}

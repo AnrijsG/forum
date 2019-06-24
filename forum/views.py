@@ -1,8 +1,8 @@
 import json
 
 from django.contrib.auth import authenticate, login, forms
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
-from django.contrib.auth.decorators import login_required, permission_required
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.forms.models import model_to_dict
@@ -10,18 +10,22 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
 from .forms import UserForm
-from .models import Section, Thread, Post, User, UserGroup
+from .models import Section, Thread, Post, User, Upvote, LogItem
 
 
 def index(request):
     section_list = Section.objects.all()
     thread_list = Thread.objects.all()
+    is_admin = False
+    user_groups = request.user.groups.values_list('name',flat=True)
+    if user_groups.filter(name="Administrator"):
+        is_admin = True
     if request.user.is_authenticated:
         current_user = request.user
     else:
         current_user = ''
 
-    return render(request, 'Index/index.html', {'sections':section_list, 'threads':thread_list, 'user':current_user})
+    return render(request, 'Index/index.html', {'sections': section_list, 'threads': thread_list, 'user': current_user, 'isAdmin': is_admin})
 
 
 def safe_call(value, f):
@@ -52,16 +56,18 @@ def get_threads(request, section_id):
 
 
 @login_required
-@permission_required(perm='add_thread', raise_exception=True)
 @transaction.atomic
 def create_thread(request, section_id):
-    data = json.loads(request.body)
-    new_thread = Thread(title=data["title"], section_id=section_id)
-    new_thread.save()
-    new_post = Post(thread=new_thread, author=request.user, text=data["text"])
-    new_post.save()
-    new_thread_id = {"id":new_thread.pk}
-    return HttpResponse(json.dumps(new_thread_id), content_type="application/json")
+    if request.user.get_group_permissions(obj=None).__contains__('forum.add_thread'):
+        data = json.loads(request.body)
+        new_thread = Thread(title=data["title"], section_id=section_id)
+        new_thread.save()
+        log = LogItem(action="Create thread", table="forum_thread", old_value="", new_value=new_thread.title, user_id=request.user.id)
+        new_post = Post(thread=new_thread, author=request.user, text=data["text"])
+        new_post.save()
+        log.save()
+        new_thread_id = {"id":new_thread.pk}
+        return HttpResponse(json.dumps(new_thread_id), content_type="application/json")
 
 
 def show_thread(request, thread_id):
@@ -71,11 +77,17 @@ def show_thread(request, thread_id):
 
     paginator = Paginator(all_posts.exclude(id=first_post.pk), 5)
 
+
     posts = paginator.get_page(page)
     db_query = Post.objects.filter(thread=thread_id)
     op = db_query.order_by("last_edited_on").first()
 
-    return render(request, "ThreadTemplate/thread_template.html", {'first_post': first_post, 'post_list': posts, 'original_poster': op})
+    postDictionary = [{
+        "id": post.id,
+        "upvotes": Upvote.objects.filter(post_id=post.id).count(),
+    } for post in all_posts]
+
+    return render(request, "ThreadTemplate/thread_template.html", {'postDictionary': postDictionary, 'post_list': posts, 'first_post': first_post, 'original_poster': op})
 
 
 def authenticate(request):
@@ -125,63 +137,73 @@ def user(request, userid):
         'user': current_user})
 
 
+@transaction.atomic
 @login_required
-@permission_required(perm='add_post', raise_exception=True)
 def post_reply(request, thread_id):
-    data = json.loads(request.body)
-    new_post = Post(thread_id=thread_id, author=request.user, text=data["text"])
-    #new_post = Post.objects.create(thread_id=thread_id, author=request.user, text=data["text"])
-    new_post.save()
-    return HttpResponse()
+    if request.user.get_group_permissions(obj=None).__contains__('forum.add_post'):
+        data = json.loads(request.body)
+        new_post = Post(thread_id=thread_id, author=request.user, text=data["text"])
+        log = LogItem(action="Post reply", table="forum_post", old_value="", new_value=new_post.text, user_id=request.user.id)
+        new_post.save()
+        log.save()
+        return HttpResponse()
 
 
 @login_required
-@permission_required(perm='change_post', raise_exception=True)
 def post_edit(request, post_id):
-    text = Post.objects.filter(id=post_id)[0]
-    if request.user.pk == text.author_id or request.user.is_staff:
-        return render(request, 'edit/edit_template.html', {'text': text})
-    else:
-        return index(request)
+    if request.user.get_group_permissions(obj=None).__contains__('forum.change_post'):
+        text = Post.objects.filter(id=post_id)[0]
+        if request.user.pk == text.author_id or request.user.groups.values_list('name',flat=True).filter(name='Moderator'):
+            return render(request, 'edit/edit_template.html', {'text': text})
+        else:
+            return index(request)
 
 
+@transaction.atomic
 @login_required
-@permission_required(perm='change_post', raise_exception=True)
 def post_edit_go(request, post_id):
-    text = request.POST.get('text')
-    post = Post.objects.get(id=post_id)
-    if post.text != text:
-        post.text = text
-        post.save()
-
-    return redirect('/threads/' + str(post.thread.pk))
+    if request.user.get_group_permissions(obj=None).__contains__('forum.change_post'):
+        text = request.POST.get('text')
+        post = Post.objects.get(id=post_id)
+        if post.text != text:
+            log = LogItem(action="Edit post", table="forum_post", old_value=post.text, new_value=text, user_id=request.user.id)
+            post.text = text
+            post.save()
+            log.save()
+        return redirect('/threads/' + str(post.thread.pk))
 
 
 @login_required
-@permission_required(perm='delete_user', raise_exception=True)
 def deactivate(request):
-    if request.user.is_staff:
-        username = json.loads(request.body)
-        user = User.objects.get(username=username['username'])
-        if not user.is_superuser:
-            if user.is_active:
-                user.is_active = False
-                user.save()
-            else:
-                user.is_active = True
-                user.save()
-    return HttpResponse()
+    if request.user.get_group_permissions(obj=None).__contains__('forum.delete_user'):
+        if request.user.is_staff:
+            username = json.loads(request.body)
+            user = User.objects.get(username=username['username'])
+            if not request.user.groups.values_list('name', flat=True).filter(name='Administrator'):
+                if user.is_active:
+                    user.is_active = False
+                    user.save()
+                    log = LogItem(action="Deactivate account", table="forum_user", old_value="Active", new_value="Inactive", user_id=request.user.id)
+                    log.save()
+                else:
+                    user.is_active = True
+                    user.save()
+        return HttpResponse()
 
 
+@transaction.atomic
 @login_required
-@permission_required(perm='delete_post', raise_exception=True)
 def post_delete(request, delete_id):
-    post = Post.objects.get(id=delete_id)
-    if request.user == post.author or request.user.is_staff:
-        post.delete()
-    return HttpResponse()
+    if request.user.get_group_permissions(obj=None).__contains__('forum.delete_post'):
+        post = Post.objects.get(id=delete_id)
+        if request.user == post.author or request.user.groups.values_list('name', flat=True).filter(name='Moderator'):
+            log = LogItem(action="Delete", table="forum_post", old_value=post.text, new_value="", user_id=request.user.id)
+            post.delete()
+            log.save()
+        return HttpResponse()
 
 
+@transaction.atomic
 def register(request):
     user_form = UserForm(data=request.POST)
     if request.method == "POST":
@@ -189,9 +211,13 @@ def register(request):
             if user_form.is_valid():
                 user = user_form.save()
                 user.set_password(user.password)
-                usergroup = UserGroup.objects.get(id='2')
-                usergroup.save()
                 user.save()
+                memberGroup = Group.objects.get(name='Member')
+                memberGroup.user_set.add(user)
+                memberGroup.save()
+                log = LogItem(action="Register", table="forum_user", old_value="", new_value=user.username,
+                user_id=user.id)
+                log.save()
                 return index(request)
             else:
                 return render(request, 'registration/register.html', {'user_form': user_form, 'errors': user_form.errors})
@@ -202,11 +228,54 @@ def register(request):
         return render(request, 'registration/register.html', {'user_form': user_form})
 
 
+@transaction.atomic
 @login_required
-@permission_required(perm='delete_thread', raise_exception=True)
 def delete_thread(request):
-    if request.user.is_staff:
+    if request.user.get_group_permissions(obj=None).__contains__('forum.delete_thread'):
         thread_id = json.loads(request.body)
         thread = Thread.objects.get(id=thread_id['threadId'])
+        log = LogItem(action="Delete", table="forum_thread", old_value=thread.title, new_value="", user_id=request.user.id)
         thread.delete()
+        log.save()
+        return HttpResponse()
+
+
+@login_required
+def post_upvote(request):
+    if request.user.get_group_permissions(obj=None).__contains__('forum.add_upvote'):
+        data = json.loads(request.body)
+        post_id = data['post_id']
+        user_id = request.user.pk
+        Query = Upvote.objects.filter(post_id=post_id).filter(user_id=user_id)
+        if not Query:
+            new_upvote = Upvote(post_id=post_id, user_id=user_id)
+            new_upvote.save()
+            log = LogItem(action="Upvote", table="forum_upvote", old_value="0", new_value="1", user_id=request.user.id)
+            log.save()
+        return HttpResponse()
+
+
+def search(request):
+    data = json.loads(request.body)
+    keywords = data["query"].split(" ")
+    FoundThreads = []
+    FoundPosts = []
+    FoundUsers = []
+    for i in keywords:
+        FoundThreads.append(Thread.objects.filter(title__contains=i))
+        FoundPosts.append(Post.objects.filter(text__contains=i))
+        FoundUsers.append(User.objects.filter(username__contains=i))
+    print(FoundThreads)
+    print(FoundPosts)
+    print(FoundUsers)
+
     return HttpResponse()
+
+
+@login_required()
+def admin_panel(request):
+    if request.user.groups.values_list('name', flat=True).filter(name='Administrator'):
+        logs = LogItem.objects.all()
+        return render(request, 'AdminPanel/AdminPanel.html', {'logs': logs})
+    else:
+        return HttpResponse("403")

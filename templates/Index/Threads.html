@@ -10,9 +10,14 @@
                       <div class="col text-center">
                         <button id="load-more-{{ s.id }}" class="btn btn-secondary btn-lg btn-block align-middle" type="button">Load more</button>
                       </div>
-                  {% if user != '' %}
+                  {% if user.is_authenticated %}
                       <div class="col text-center">
                         <button class="btn btn-secondary btn-lg btn-block align-middle" type="button" data-toggle="modal" data-target="#new_thread">New thread</button>
+                      </div>
+                  {% endif %}
+                  {% if isAdmin %}
+                      <div class="col text-center">
+                        <button onclick="window.location='adminpan'" class="btn btn-secondary btn-lg btn-block align-middle" type="button">Admin panel</button>
                       </div>
                   {% endif %}
                   </div>

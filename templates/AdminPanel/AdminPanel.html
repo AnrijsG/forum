@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+{% include "Index/Navigation.html" %}
+<body>
+    <div class="card p-2 m-2">
+        <div class="card-body">
+        <h2 class="text-center pb-2">Logs</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">id</th>
+                        <th scope="col">action</th>
+                        <th scope="col">table</th>
+                        <th scope="col">old_value</th>
+                        <th scope="col">new_value</th>
+                        <th scope="col">timestamp</th>
+                        <th scope="col">user_id</th>
+                        <th scope="col">username</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for log in logs %}
+                    <tr>
+                        <th scope="row">{{ log.pk }}</th>
+                        <td scope="row">{{ log.action }}</td>
+                        <td scope="row">{{ log.table }}</td>
+                        <td scope="row">{{ log.old_value }}</td>
+                        <td scope="row">{{ log.new_value }}</td>
+                        <td scope="row">{{ log.timestamp }}</td>
+                        <td scope="row">{{ log.user.pk }}</td>
+                        <td scope="row">{{ log.user }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

@@ -41,8 +41,15 @@ function setDeleteId(id) {
 }
 
 function deleteThread() {
-    $.post("/deleteThread", JSON.stringify({threadID: threadId}), function() {
+    $.post("/deleteThread", JSON.stringify({threadId: threadId}), function() {
         window.location.href = "/";
+    });
+}
+
+function upvotePost(postId) {
+    var data = JSON.stringify({post_id: postId})
+    $.post("/upvote", data, function() {
+        location.reload();
     });
 }
 
@@ -50,8 +57,8 @@ $(function() {
     $("#delete_button").click(function () {
         if(delete_id != 0) {
             $.post("/delete/" + delete_id, JSON.stringify({delete_id: delete_id}), function() {
-            location.reload();
-        });
+                location.reload();
+            });
         }else {
             alert("Error");
         }
@@ -64,5 +71,4 @@ $(function() {
     $("#post_button").click(function () {
        newPost(threadId, $('#newPost').val());
     });
-
 });

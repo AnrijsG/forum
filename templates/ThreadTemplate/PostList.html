@@ -21,6 +21,11 @@
                     {% if post.created_on != post.last_edited_on %}
                         <p>Edited on: {{ post.last_edited_on|date:"d/m/Y" }}</p>
                     {% endif %}
+                    {% for i in postDictionary %}
+                        {% if i.id == post.id %}
+                            <p>Upvotes: {{ i.upvotes }}</p>
+                        {% endif %}
+                    {% endfor %}
                 </div>
                 <div class="col">
                     {{ post.text }}
@@ -30,6 +35,9 @@
         <div class="row">
             <div class="col"></div>
             <div class="col m-1">
+                {% if user.is_authenticated %}
+                    <button type="button" class="btn btn-success float-right" onclick="upvotePost({{ post.id }});" id="upvoteButton">Upvote</button>
+                {% endif %}
                 {% if user.is_staff or user == post.author %}
                     <button type="button" class="btn btn-warning float-right" onclick="window.location='/edit/{{ post.id }}'">Edit</button>
                     <button type="button" onclick="setDeleteId({{ post.id }})" class="btn btn-danger float-right" data-toggle="modal" data-target="#deleteModal">Delete</button>
