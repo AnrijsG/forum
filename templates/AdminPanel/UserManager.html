@@ -18,19 +18,19 @@
             {% for i in users %}
                 <tr>
                     <th scope="row">{{ i.user_id }}</th>
-                    <td scope="row"><a href="/u/{{ i.user_id }}">{{ i.username }}</a></td>
-                    <td scope="row">
+                    <th scope="row"><a href="/u/{{ i.user_id }}">{{ i.username }}</a></th>
+                    <th scope="row">
                     {% for j in i.groups %}
                         {{ j }}; <br>
                     {% endfor %}
-                    </td>
-                    <td scope="row">
+                    </th>
+                    <th scope="row">
                         {% if i.user_id == request.user.id %}
                             Self
                         {% else %}
                             <button class="btn" type="button" data-toggle="modal" data-target="#edit_user" onclick="change({{ i.user_id }});">change</button>
                         {% endif %}
-                    </td>
+                    </th>
                 </tr>
             {% endfor %}
             </tbody>

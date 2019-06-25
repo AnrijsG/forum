@@ -33,7 +33,7 @@
             <div class="col"></div>
             <div class="col m-1">
                 {% if user.is_authenticated %}
-                    <button type="button" class="btn btn-success float-right" onclick="upvotePost({{ post.id }});" id="upvoteButton">Upvote</button>
+                    <button type="button" class="btn btn-success float-right" onclick="upvotePost({{ post.id }});">Upvote</button>
                 {% endif %}
                 {% if user.is_staff or user == post.author %}
                     <button type="button" class="btn btn-warning float-right" onclick="window.location='/edit/{{ post.id }}'">Edit</button>
