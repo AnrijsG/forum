@@ -10,7 +10,7 @@
     <a class="navbar-brand" href="/">Forum</a>
     <div class="form-inline">
         {% if user.is_authenticated %}
-                <p class="navbar-text mr-4 h6 text-secondary">Hi, <a class="text-secondary" href="u/{{ user.id }}">{{ user }}!</a></p>
+                <p class="navbar-text mr-4 h6 text-secondary">Hi, <a class="text-secondary" href="/u/{{ user.id }}">{{ user }}!</a></p>
                 <a class="navbar-text mr-4 h6" href="{% url 'logout' %}">Logout</a>
         {% else %}
             <a class="navbar-text mr-4" href="/accounts/login">Login</a>

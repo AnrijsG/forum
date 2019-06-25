@@ -109,8 +109,9 @@ def user(request, userid):
     username = selected_user[0].username
     first_name = selected_user[0].first_name
     last_name = selected_user[0].last_name
-    is_staff = selected_user[0].is_staff
-    is_su = selected_user[0].is_superuser
+    selected_user_groups = User.objects.get(id=userid)
+    isModerator = True if selected_user_groups.groups.values_list('name', flat=True).filter(name='Moderator') else False
+    isAdministrator = True if selected_user_groups.groups.values_list('name', flat=True).filter(name='Administrator') else False
     date_joined = selected_user[0].date_joined
     last_login = selected_user[0].last_login
     is_active = selected_user[0].is_active
@@ -127,9 +128,9 @@ def user(request, userid):
         'username': username,
         'first_name': first_name,
         'last_name': last_name,
-        'is_staff': is_staff,
-        'is_su': is_su,
         'is_active': is_active,
+        'isModerator': isModerator,
+        'isAdministrator': isAdministrator,
         'date_joined': date_joined,
         'last_login': last_login,
         'post_count': post_count,
@@ -176,21 +177,19 @@ def post_edit_go(request, post_id):
 @login_required
 def deactivate(request):
     if request.user.get_group_permissions(obj=None).__contains__('forum.delete_user'):
-        if request.user.is_staff:
-            username = json.loads(request.body)
-            user = User.objects.get(username=username['username'])
-            if not request.user.groups.values_list('name', flat=True).filter(name='Administrator'):
-                if user.is_active:
-                    user.is_active = False
-                    user.save()
-                    log = LogItem(action="Account deactivation", table="forum_user", old_value="Active", new_value="Inactive", user_id=request.user.id)
-                    log.save()
-                else:
-                    user.is_active = True
-                    user.save()
-                    log = LogItem(action="Account activation", table="forum_user", old_value="Inactive", new_value="Active", user_id=request.user.id)
-                    log.save()
-        return HttpResponse()
+        username = json.loads(request.body)
+        user = User.objects.get(username=username['username'])
+        if user.is_active:
+            user.is_active = False
+            user.save()
+            log = LogItem(action="Account deactivation", table="forum_user", old_value="Active", new_value="Inactive", user_id=request.user.id)
+            log.save()
+        else:
+            user.is_active = True
+            user.save()
+            log = LogItem(action="Account activation", table="forum_user", old_value="Inactive", new_value="Active", user_id=request.user.id)
+            log.save()
+    return HttpResponse()
 
 
 @transaction.atomic

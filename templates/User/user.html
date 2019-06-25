@@ -14,12 +14,12 @@
             </div>
             <div class="w-100"></div>
             <div class="col">
-                {% if is_su %}
+                {% if isAdministrator %}
                     <span class="badge badge-pill badge-danger">Administrator</span>
-                {% elif is_staff %}
+                {% elif isModerator %}
                     <span class="badge badge-pill badge-warning">Moderator</span>
                 {% else %}
-                    <span class="badge badge-pill badge-primary">User</span>
+                    <span class="badge badge-pill badge-primary">Member</span>
                 {% endif %}
             </div>
             <div class="col">
