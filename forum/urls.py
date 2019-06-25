@@ -33,6 +33,8 @@ urlpatterns = [
     path('u/<userid>', views.user),
     path('deactivate', views.deactivate),
     path('upvote', views.post_upvote),
-    path('search', views.search),
-    path('adminpan', views.admin_panel)
+    path('adminpan', views.admin_panel),
+    path('adminpan/logs', views.admin_panel_logs),
+    path('adminpan/usermngr', views.admin_panel_usermngr),
+    path('changeRoles', views.change_roles)
 ]

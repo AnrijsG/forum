@@ -183,11 +183,13 @@ def deactivate(request):
                 if user.is_active:
                     user.is_active = False
                     user.save()
-                    log = LogItem(action="Deactivate account", table="forum_user", old_value="Active", new_value="Inactive", user_id=request.user.id)
+                    log = LogItem(action="Account deactivation", table="forum_user", old_value="Active", new_value="Inactive", user_id=request.user.id)
                     log.save()
                 else:
                     user.is_active = True
                     user.save()
+                    log = LogItem(action="Account activation", table="forum_user", old_value="Inactive", new_value="Active", user_id=request.user.id)
+                    log.save()
         return HttpResponse()
 
 
@@ -255,27 +257,68 @@ def post_upvote(request):
         return HttpResponse()
 
 
-def search(request):
-    data = json.loads(request.body)
-    keywords = data["query"].split(" ")
-    FoundThreads = []
-    FoundPosts = []
-    FoundUsers = []
-    for i in keywords:
-        FoundThreads.append(Thread.objects.filter(title__contains=i))
-        FoundPosts.append(Post.objects.filter(text__contains=i))
-        FoundUsers.append(User.objects.filter(username__contains=i))
-    print(FoundThreads)
-    print(FoundPosts)
-    print(FoundUsers)
-
-    return HttpResponse()
+@login_required()
+def admin_panel(request):
+    if request.user.groups.values_list('name', flat=True).filter(name='Administrator'):
+        return render(request, 'AdminPanel/Main.html')
+    else:
+        return HttpResponse("403")
 
 
 @login_required()
-def admin_panel(request):
+def admin_panel_logs(request):
     if request.user.groups.values_list('name', flat=True).filter(name='Administrator'):
         logs = LogItem.objects.all()
         return render(request, 'AdminPanel/AdminPanel.html', {'logs': logs})
     else:
         return HttpResponse("403")
+
+
+@login_required()
+def admin_panel_usermngr(request):
+    if request.user.groups.values_list('name', flat=True).filter(name='Administrator'):
+        all_users = User.objects.all()
+        users = [{
+            "user_id": user.pk,
+            "username": user.username,
+            "groups": user.groups.values_list('name', flat=True)
+        } for user in all_users]
+        return render(request, 'AdminPanel/UserManager.html', {"users": users, "request": request})
+    else:
+        return HttpResponse("403")
+
+
+@login_required()
+def change_roles(request):
+    if request.user.groups.values_list('name', flat=True).filter(name='Administrator'):
+        data = json.loads(request.body)
+        user_id = data['user_id']
+        moderator = data['moderator']
+        administrator = data['administrator']
+        moderatorGroup = Group.objects.get(name='Moderator')
+        administratorGroup = Group.objects.get(name='Administrator')
+        selected_user = User.objects.get(id=user_id)
+        if moderator:
+            log = LogItem(action="Change User Group", table="forum_user_groups", old_value="Member", new_value="Member; Moderator", user_id=request.user.id)
+            moderatorGroup.user_set.add(selected_user)
+            moderatorGroup.save()
+            log.save()
+        elif selected_user.groups.values_list('name', flat=True).filter(name='Moderator'):
+            log = LogItem(action="Change User Group", table="forum_user_groups", old_value="Member; Moderator", new_value="Member;", user_id=request.user.id)
+            moderatorGroup.user_set.remove(selected_user)
+            moderatorGroup.save()
+            log.save()
+        if administrator:
+            log = LogItem(action="Change User Group", table="forum_user_groups", old_value="Member; Moderator", new_value="Member; Moderator; Administrator", user_id=request.user.id)
+            moderatorGroup.user_set.add(selected_user)
+            administratorGroup.user_set.add(selected_user)
+            administratorGroup.save()
+            log.save()
+        elif selected_user.groups.values_list('name', flat=True).filter(name='Administrator'):
+            administratorGroup.user_set.remove(selected_user)
+            log = LogItem(action="Change User Group", table="forum_user_groups", old_value="Member; Moderator; Administrator", new_value="Member; Moderator", user_id=request.user.id)
+            administratorGroup.save()
+            log.save()
+        return HttpResponse()
+    else:
+        return HttpResponse()

@@ -21,16 +21,18 @@ $.ajaxSetup({
      }
  }
 });
+var userId = 0;
 
-function search() {
-    keywords = $("#searchBox").val();
-    $.post("/search", JSON.stringify({query: keywords}), function() {
-
-    });
+function change(x) {
+    userId = x;
 }
 
 $(function () {
-    $('#searchButton').click(function () {
-        search();
-    })
-});
+    $("#save_changes").click( function () {
+        var ModeratorChecked = $("#ModeratorCheckbox").is(":checked");
+        var AdministratorChecked = $("#AdministratorCheckbox").is(":checked");
+        $.post("/changeRoles", JSON.stringify({moderator: ModeratorChecked, administrator: AdministratorChecked, user_id: userId}), function() {
+            location.reload();
+        });
+    });
+})
