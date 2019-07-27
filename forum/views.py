@@ -302,21 +302,29 @@ def change_roles(request):
             moderatorGroup.user_set.add(selected_user)
             moderatorGroup.save()
             log.save()
+            selected_user.is_staff = True
+            selected_user.save()
         elif selected_user.groups.values_list('name', flat=True).filter(name='Moderator'):
             log = LogItem(action="Change User Group", table="forum_user_groups", old_value="Member; Moderator", new_value="Member;", user_id=request.user.id)
             moderatorGroup.user_set.remove(selected_user)
             moderatorGroup.save()
+            selected_user.is_staff = False
+            selected_user.save()
             log.save()
         if administrator:
             log = LogItem(action="Change User Group", table="forum_user_groups", old_value="Member; Moderator", new_value="Member; Moderator; Administrator", user_id=request.user.id)
             moderatorGroup.user_set.add(selected_user)
             administratorGroup.user_set.add(selected_user)
             administratorGroup.save()
+            selected_user.is_superuser = True
+            selected_user.save()
             log.save()
         elif selected_user.groups.values_list('name', flat=True).filter(name='Administrator'):
             administratorGroup.user_set.remove(selected_user)
             log = LogItem(action="Change User Group", table="forum_user_groups", old_value="Member; Moderator; Administrator", new_value="Member; Moderator", user_id=request.user.id)
             administratorGroup.save()
+            selected_user.is_superuser = False
+            selected_user.save()
             log.save()
         return HttpResponse()
     else:
